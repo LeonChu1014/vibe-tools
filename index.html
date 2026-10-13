@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101827" />
+  <meta name="description" content="線索燈塔：把生活筆記整理成可搜尋的線索，看看當下的問題會喚起哪些記憶。" />
+  <title>線索燈塔｜記憶工作台</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d1422;
+      --panel: #151f31;
+      --panel-2: #1a263a;
+      --panel-3: #202d42;
+      --line: rgba(202, 218, 246, .12);
+      --text: #eef4ff;
+      --muted: #99a8c0;
+      --soft: #c4d0e3;
+      --cyan: #71e3da;
+      --cyan-deep: #2eb6b3;
+      --violet: #b9a3ff;
+      --orange: #ffc27b;
+      --pink: #ff9dba;
+      --green: #97e4ac;
+      --danger: #ff9a9a;
+      --radius: 22px;
+      --shadow: 0 18px 42px rgba(0,0,0,.18);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 10% -12%, rgba(91, 113, 189, .22), transparent 38rem),
+        radial-gradient(ellipse at 96% 8%, rgba(58, 190, 184, .10), transparent 28rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", sans-serif;
+      line-height: 1.55;
+    }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+      outline: 3px solid rgba(113,227,218,.8); outline-offset: 3px;
+    }
+    .app-shell { width: min(1240px, calc(100% - 36px)); margin: 0 auto; padding: 24px 0 42px; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; gap: 20px; margin-bottom: 28px; }
+    .brand { display:flex; align-items:center; gap: 12px; min-width:0; }
+    .brand-mark { display:grid; place-items:center; width:44px; height:44px; flex:none; border:1px solid rgba(113,227,218,.36); border-radius:15px; background:linear-gradient(145deg, rgba(113,227,218,.2), rgba(185,163,255,.16)); box-shadow:0 0 28px rgba(113,227,218,.09); font-size:22px; }
+    .brand-name { font-weight:800; letter-spacing:.04em; font-size:16px; }
+    .brand-sub { color:var(--muted); font-size:11px; letter-spacing:.16em; text-transform:uppercase; }
+    .top-actions { display:flex; gap:9px; align-items:center; }
+    .status-pill { display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--line); border-radius:999px; color:var(--soft); font-size:12px; background:rgba(255,255,255,.025); }
+    .status-dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 12px rgba(151,228,172,.55); }
+    .button { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1px solid transparent; border-radius:12px; padding:10px 14px; font-weight:750; font-size:13px; transition:transform .16s ease, background .16s ease, border-color .16s ease; }
+    .button:hover { transform:translateY(-1px); }
+    .button-primary { color:#10212b; background:var(--cyan); box-shadow:0 8px 20px rgba(46,182,179,.13); }
+    .button-primary:hover { background:#91f2e9; }
+    .button-quiet { background:rgba(255,255,255,.035); border-color:var(--line); color:var(--soft); }
+    .button-quiet:hover { background:rgba(255,255,255,.07); border-color:rgba(202,218,246,.23); }
+    .button-danger { background:rgba(255,154,154,.08); border-color:rgba(255,154,154,.18); color:#ffb9b9; }
+    .button-small { font-size:12px; padding:7px 10px; border-radius:10px; }
+    .hero { position:relative; display:grid; grid-template-columns:minmax(0,1fr) 260px; align-items:center; gap:22px; min-height:248px; overflow:hidden; padding:34px 38px; border:1px solid rgba(184,205,241,.13); border-radius:28px; background:linear-gradient(118deg, rgba(29,47,69,.94), rgba(22,30,51,.93) 58%, rgba(48,44,78,.8)); box-shadow:var(--shadow); }
+    .hero::before { content:""; position:absolute; width:340px; height:340px; border:1px solid rgba(113,227,218,.12); border-radius:50%; right:90px; top:-210px; box-shadow:0 0 0 35px rgba(113,227,218,.025), 0 0 0 72px rgba(185,163,255,.025); pointer-events:none; }
+    .eyebrow { display:inline-flex; align-items:center; gap:9px; color:var(--cyan); font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.16em; margin-bottom:12px; }
+    .eyebrow-line { width:22px; height:1px; background:var(--cyan); }
+    h1 { margin:0; max-width:720px; font-size:clamp(30px, 4.1vw, 47px); line-height:1.16; letter-spacing:-.045em; }
+    .gradient-text { color:var(--cyan); }
+    .hero-copy { max-width:610px; color:#b9c7dc; margin:17px 0 22px; font-size:14px; }
+    .hero-actions { display:flex; gap:10px; flex-wrap:wrap; }
+    .hero-art { min-height:165px; display:grid; place-items:center; position:relative; }
+    .orbit { width:178px; height:178px; border-radius:50%; border:1px solid rgba(185,163,255,.36); display:grid; place-items:center; position:relative; box-shadow:0 0 44px rgba(113,227,218,.06), inset 0 0 35px rgba(185,163,255,.05); transform:rotate(-12deg); }
+    .orbit::before,.orbit::after { content:""; position:absolute; border-radius:50%; border:1px dashed rgba(113,227,218,.28); inset:19px; }
+    .orbit::after { inset:43px; border-style:solid; border-color:rgba(255,194,123,.24); }
+    .orbit-core { transform:rotate(12deg); width:73px; height:73px; display:grid; place-items:center; border-radius:24px; background:linear-gradient(145deg, rgba(113,227,218,.22), rgba(185,163,255,.2)); border:1px solid rgba(113,227,218,.42); font-size:30px; box-shadow:0 0 32px rgba(113,227,218,.16); }
+    .orbit-star { position:absolute; display:grid; place-items:center; width:32px; height:32px; border-radius:11px; border:1px solid rgba(255,255,255,.16); background:#1c2a40; font-size:14px; transform:rotate(12deg); }
+    .orbit-star.one { top:6px; left:30px; color:var(--orange); }
+    .orbit-star.two { right:-3px; top:75px; color:var(--cyan); }
+    .orbit-star.three { bottom:9px; left:37px; color:var(--pink); }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:18px 0 28px; }
+    .stat { display:flex; align-items:center; gap:13px; min-width:0; padding:16px 18px; border:1px solid var(--line); border-radius:17px; background:rgba(21,31,49,.72); }
+    .stat-icon { display:grid; place-items:center; width:40px; height:40px; flex:none; border-radius:13px; background:rgba(113,227,218,.09); font-size:18px; }
+    .stat:nth-child(2) .stat-icon { background:rgba(255,194,123,.1); }
+    .stat:nth-child(3) .stat-icon { background:rgba(185,163,255,.11); }
+    .stat-number { font-size:23px; font-weight:850; line-height:1.1; font-variant-numeric:tabular-nums; }
+    .stat-label { color:var(--muted); font-size:11px; margin-top:4px; }
+    .workspace { display:grid; grid-template-columns:250px minmax(0,1fr); gap:18px; align-items:start; }
+    .sidebar { display:grid; gap:15px; }
+    .panel { border:1px solid var(--line); border-radius:var(--radius); background:rgba(21,31,49,.81); box-shadow:0 12px 30px rgba(0,0,0,.08); }
+    .sidebar-panel { padding:18px; }
+    .section-label { color:#8294b0; font-size:10px; font-weight:850; letter-spacing:.15em; text-transform:uppercase; margin:0 0 13px; }
+    .side-nav { display:grid; gap:5px; }
+    .nav-button { display:flex; align-items:center; gap:10px; width:100%; padding:10px 11px; border:1px solid transparent; border-radius:11px; text-align:left; background:transparent; color:#bcc9dc; font-size:13px; }
+    .nav-button:hover { background:rgba(255,255,255,.035); }
+    .nav-button.active { background:rgba(113,227,218,.09); border-color:rgba(113,227,218,.16); color:#a5f4eb; }
+    .nav-icon { width:20px; text-align:center; opacity:.95; }
+    .nav-count { margin-left:auto; color:#8fa1bb; font-size:11px; font-variant-numeric:tabular-nums; }
+    .category-list { display:grid; gap:4px; }
+    .category-button { display:flex; align-items:center; gap:9px; width:100%; background:none; border:1px solid transparent; border-radius:10px; padding:8px 10px; color:#b6c4d9; font-size:12px; text-align:left; }
+    .category-button.active { background:rgba(185,163,255,.09); border-color:rgba(185,163,255,.17); color:#dbd0ff; }
+    .category-swatch { width:8px; height:8px; border-radius:3px; background:var(--swatch,var(--cyan)); }
+    .category-count { margin-left:auto; color:#8192ab; font-size:11px; }
+    .hint-panel { padding:16px; background:linear-gradient(145deg, rgba(113,227,218,.075), rgba(185,163,255,.06)); }
+    .hint-title { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:800; margin-bottom:7px; }
+    .hint-panel p { color:var(--muted); font-size:11px; line-height:1.7; margin:0; }
+    .main-column { min-width:0; }
+    .search-panel { padding:22px; margin-bottom:16px; }
+    .search-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:15px; margin-bottom:16px; }
+    .search-heading h2 { margin:0; font-size:19px; letter-spacing:-.02em; }
+    .search-heading p { margin:5px 0 0; color:var(--muted); font-size:12px; }
+    .mini-label { padding:5px 8px; border:1px solid rgba(113,227,218,.2); border-radius:8px; color:var(--cyan); font-size:10px; font-weight:800; letter-spacing:.08em; white-space:nowrap; }
+    .search-row { display:flex; gap:9px; }
+    .search-box { display:flex; align-items:center; gap:11px; flex:1; min-width:0; border:1px solid rgba(177,197,227,.17); border-radius:13px; background:rgba(5,12,23,.32); padding:0 13px; transition:border-color .18s ease, box-shadow .18s ease; }
+    .search-box:focus-within { border-color:rgba(113,227,218,.54); box-shadow:0 0 0 3px rgba(113,227,218,.06); }
+    .search-symbol { color:var(--cyan); font-size:18px; }
+    .search-box input { width:100%; min-width:0; padding:13px 0; outline:none; border:0; color:var(--text); background:transparent; font-size:13px; }
+    input::placeholder, textarea::placeholder { color:#65758d; }
+    .suggestions { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:13px; }
+    .suggestion-label { color:#8292aa; font-size:10px; margin-right:2px; }
+    .suggestion-chip { border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.025); color:#b9c7db; padding:5px 9px; font-size:10px; }
+    .suggestion-chip:hover { border-color:rgba(113,227,218,.35); color:var(--cyan); }
+    .results-toolbar { display:flex; align-items:center; justify-content:space-between; gap:10px; margin:25px 2px 12px; }
+    .results-title { display:flex; gap:9px; align-items:center; margin:0; font-size:15px; }
+    .results-sub { color:var(--muted); font-size:11px; margin:4px 0 0; }
+    .results-count { color:#9fb0c8; font-size:11px; white-space:nowrap; }
+    .note-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+    .note-card { position:relative; display:flex; flex-direction:column; min-width:0; min-height:230px; padding:17px; overflow:hidden; border:1px solid var(--line); border-radius:18px; background:linear-gradient(160deg, rgba(25,37,57,.92), rgba(20,29,46,.91)); transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+    .note-card:hover { transform:translateY(-2px); border-color:rgba(185,205,239,.24); box-shadow:0 15px 25px rgba(0,0,0,.12); }
+    .note-card::before { content:""; position:absolute; left:0; top:18px; bottom:18px; width:2px; background:var(--card-accent,var(--cyan)); opacity:.75; border-radius:0 4px 4px 0; }
+    .note-card.pinned { border-color:rgba(255,194,123,.23); }
+    .note-card.pinned::before { background:var(--orange); }
+    .note-topline { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
+    .category-tag { display:inline-flex; align-items:center; gap:6px; color:var(--tag-color,#8ce8df); background:var(--tag-bg,rgba(113,227,218,.08)); padding:5px 8px; border-radius:7px; font-size:10px; font-weight:800; }
+    .note-date { color:#72829a; font-size:10px; white-space:nowrap; }
+    .note-title { margin:0; font-size:16px; line-height:1.35; letter-spacing:-.02em; overflow-wrap:anywhere; }
+    .note-body { flex:1; color:#aab8cd; font-size:12px; line-height:1.75; margin:10px 0 13px; overflow-wrap:anywhere; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; white-space:pre-wrap; }
+    .note-tags { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:13px; }
+    .tag { color:#8799b3; font-size:10px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.045); border-radius:6px; padding:3px 6px; }
+    .relevance { margin:0 0 13px; padding:10px 10px 9px; background:rgba(113,227,218,.045); border:1px solid rgba(113,227,218,.09); border-radius:10px; }
+    .relevance-top { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:7px; font-size:10px; }
+    .relevance-top span:first-child { color:#b3e9e5; }
+    .relevance-value { color:var(--cyan); font-weight:850; font-variant-numeric:tabular-nums; }
+    .meter { height:4px; overflow:hidden; border-radius:999px; background:rgba(255,255,255,.08); }
+    .meter-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,var(--cyan-deep),var(--violet)); transition:width .25s ease; }
+    .match-terms { margin-top:6px; color:#8194ad; font-size:10px; }
+    .note-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid rgba(202,218,246,.07); padding-top:12px; margin-top:auto; }
+    .note-footer-left { color:#70829b; font-size:10px; }
+    .note-actions { display:flex; gap:5px; }
+    .icon-button { display:grid; place-items:center; width:31px; height:30px; border:1px solid rgba(202,218,246,.1); border-radius:9px; background:rgba(255,255,255,.025); color:#9aabc3; font-size:13px; }
+    .icon-button:hover { color:var(--cyan); border-color:rgba(113,227,218,.35); }
+    .icon-button.is-pinned { color:var(--orange); border-color:rgba(255,194,123,.27); background:rgba(255,194,123,.08); }
+    .empty-state { padding:42px 20px; text-align:center; border:1px dashed rgba(202,218,246,.16); border-radius:18px; background:rgba(255,255,255,.015); }
+    .empty-icon { font-size:30px; margin-bottom:8px; }
+    .empty-state h3 { margin:0 0 6px; font-size:16px; }
+    .empty-state p { margin:0 auto 17px; max-width:360px; color:var(--muted); font-size:12px; }
+    .bottom-note { display:flex; gap:12px; align-items:flex-start; padding:17px 19px; margin-top:22px; border:1px solid rgba(185,163,255,.16); border-radius:15px; background:rgba(185,163,255,.045); }
+    .bottom-note-icon { font-size:17px; }
+    .bottom-note strong { display:block; margin-bottom:3px; font-size:11px; }
+    .bottom-note p { margin:0; color:#94a5bd; font-size:11px; line-height:1.7; }
+    .footer { display:flex; align-items:center; justify-content:space-between; gap:12px; color:#60718b; font-size:10px; padding:23px 3px 0; }
+    .footer a { color:#8394ad; text-decoration:none; }
+    .footer a:hover { color:var(--cyan); }
+    .modal-backdrop { position:fixed; z-index:50; inset:0; display:grid; place-items:center; padding:18px; background:rgba(4,8,16,.76); backdrop-filter:blur(9px); }
+    .modal-backdrop[hidden] { display:none !important; }
+    .modal { width:min(560px,100%); max-height:min(90vh,800px); overflow:auto; border:1px solid rgba(200,216,245,.18); border-radius:22px; background:#151f31; box-shadow:0 30px 80px rgba(0,0,0,.45); }
+    .modal-header { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:22px 23px 16px; border-bottom:1px solid var(--line); }
+    .modal-header h2 { margin:0; font-size:19px; }
+    .modal-header p { color:var(--muted); font-size:11px; margin:5px 0 0; }
+    .close-button { width:32px; height:32px; flex:none; border:1px solid var(--line); border-radius:9px; color:#9eafc7; background:rgba(255,255,255,.03); }
+    .form { padding:20px 23px 23px; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .field { display:grid; gap:6px; min-width:0; margin-bottom:14px; }
+    .field.full { grid-column:1/-1; }
+    .field label { color:#bfccdf; font-size:11px; font-weight:750; }
+    .field input,.field textarea,.field select { width:100%; border:1px solid rgba(202,218,246,.15); border-radius:10px; background:#0f1828; color:var(--text); padding:11px 12px; font-size:12px; }
+    .field textarea { min-height:124px; resize:vertical; line-height:1.65; }
+    .field-hint { color:#71839c; font-size:10px; }
+    .form-actions { display:flex; justify-content:space-between; align-items:center; gap:10px; border-top:1px solid var(--line); margin-top:5px; padding-top:17px; }
+    .check-label { display:flex; align-items:center; gap:8px; color:#b3c0d3; font-size:11px; }
+    .check-label input { accent-color:var(--cyan); }
+    .toast-region { position:fixed; z-index:80; right:18px; bottom:18px; display:grid; gap:8px; width:min(360px,calc(100% - 36px)); pointer-events:none; }
+    .toast { border:1px solid rgba(113,227,218,.24); border-radius:12px; background:#1b2a3f; color:#e9f8f6; padding:12px 15px; font-size:12px; box-shadow:0 16px 40px rgba(0,0,0,.25); animation:toast-in .2s ease; }
+    .toast.error { border-color:rgba(255,154,154,.35); color:#ffd0d0; }
+    @keyframes toast-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    @media (max-width: 980px) {
+      .hero { grid-template-columns:minmax(0,1fr) 180px; padding:29px; }
+      .orbit { width:150px;height:150px; }
+      .workspace { grid-template-columns:215px minmax(0,1fr); }
+      .note-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width: 720px) {
+      .app-shell { width:min(100% - 24px,600px); padding-top:14px; }
+      .topbar { align-items:flex-start; margin-bottom:17px; }
+      .brand-mark { width:39px;height:39px;border-radius:13px; }
+      .brand-name { font-size:14px; }
+      .brand-sub { font-size:9px; }
+      .status-pill { display:none; }
+      .top-actions .button { padding:9px 10px; font-size:11px; }
+      .hero { display:block; min-height:0; padding:27px 23px; border-radius:22px; }
+      .hero-art { position:absolute; right:-26px; bottom:-48px; opacity:.33; transform:scale(.8); pointer-events:none; }
+      h1 { max-width:100%; font-size:34px; }
+      .hero-copy { max-width:100%; padding-right:0; font-size:12px; }
+      .hero-actions .button { font-size:12px; }
+      .stats { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:12px 0 19px; }
+      .stat { display:block; padding:12px 10px; border-radius:14px; }
+      .stat-icon { width:31px;height:31px;border-radius:10px;font-size:14px;margin-bottom:8px; }
+      .stat-number { font-size:19px; }
+      .stat-label { font-size:10px; line-height:1.4; }
+      .workspace { display:flex; flex-direction:column; gap:13px; }
+      .sidebar { width:100%; grid-template-columns:1fr; gap:11px; }
+      .sidebar-panel { padding:14px; }
+      .side-nav { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .category-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .hint-panel { display:none; }
+      .main-column { width:100%; }
+      .search-panel { padding:16px; border-radius:18px; }
+      .search-heading h2 { font-size:17px; }
+      .search-heading p { font-size:11px; }
+      .mini-label { display:none; }
+      .search-row { flex-direction:column; }
+      .search-row .button { width:100%; }
+      .results-toolbar { margin-top:19px; }
+      .note-card { min-height:0; padding:16px; }
+      .bottom-note { margin-top:17px; }
+      .footer { flex-direction:column; align-items:flex-start; gap:5px; }
+    }
+    @media (max-width: 400px) {
+      .topbar { gap:8px; }
+      .brand { gap:8px; }
+      .brand-name { font-size:12px; }
+      .top-actions .button { padding:8px; }
+      h1 { font-size:29px; }
+      .stats { gap:6px; }
+      .stat { padding:10px 8px; }
+      .stat-number { font-size:17px; }
+      .form-grid { grid-template-columns:1fr; gap:0; }
+      .form-grid .field.full { grid-column:auto; }
+      .form { padding:17px; }
+      .modal-header { padding:18px 17px 14px; }
+      .form-actions { align-items:flex-start; flex-direction:column; }
+    }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation:none !important; transition:none !important; } }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="線索燈塔首頁">
+        <div class="brand-mark" aria-hidden="true">✦</div>
+        <div>
+          <div class="brand-name">線索燈塔 <span style="color:var(--cyan)">/</span> 記憶工作台</div>
+          <div class="brand-sub">memory field notes · personal edition</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div class="status-pill"><span class="status-dot"></span><span id="saveStatus">資料儲存在這台裝置</span></div>
+        <button class="button button-quiet" id="exportBtn" type="button" title="匯出目前所有線索">↗ 匯出</button>
+        <button class="button button-primary" id="addTopBtn" type="button">＋ 新增線索</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="heroTitle">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-line"></span> YOUR THOUGHTS, CONNECTED</div>
+          <h1 id="heroTitle">每個問題，<br />都有值得想起的<span class="gradient-text">線索。</span></h1>
+          <p class="hero-copy">把零散想法收進同一座燈塔。記下靈感、計畫和生活提醒；當新的問題出現，就搜尋看看哪些舊線索能幫上忙。</p>
+          <div class="hero-actions">
+            <button class="button button-primary" id="addHeroBtn" type="button">✚ 把新想法收進來</button>
+            <button class="button button-quiet" id="focusSearchBtn" type="button">⌕ 試試線索搜尋</button>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit"><span class="orbit-star one">✧</span><span class="orbit-star two">⌕</span><span class="orbit-star three">✦</span><div class="orbit-core">🧭</div></div>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="線索統計">
+        <div class="stat"><div class="stat-icon">◈</div><div><div class="stat-number" id="totalStat">0</div><div class="stat-label">已收藏線索</div></div></div>
+        <div class="stat"><div class="stat-icon">✦</div><div><div class="stat-number" id="pinnedStat">0</div><div class="stat-label">重要線索</div></div></div>
+        <div class="stat"><div class="stat-icon">▦</div><div><div class="stat-number" id="categoryStat">0</div><div class="stat-label">探索中的分類</div></div></div>
+      </section>
+
+      <div class="workspace">
+        <aside class="sidebar" aria-label="線索篩選">
+          <section class="panel sidebar-panel">
+            <p class="section-label">你的收藏空間</p>
+            <nav class="side-nav" id="mainFilters" aria-label="主要篩選">
+              <button class="nav-button active" data-filter="all" type="button"><span class="nav-icon">▤</span>全部線索<span class="nav-count" id="allCount">0</span></button>
+              <button class="nav-button" data-filter="pinned" type="button"><span class="nav-icon">✦</span>重要標記<span class="nav-count" id="pinnedCount">0</span></button>
+            </nav>
+            <div style="height:1px;background:var(--line);margin:17px 0 15px"></div>
+            <p class="section-label">依分類探索</p>
+            <div class="category-list" id="categoryFilters">
+              <button class="category-button active" data-category="all" type="button"><span class="category-swatch" style="--swatch:var(--cyan)"></span>所有分類<span class="category-count" id="categoryAllCount">0</span></button>
+            </div>
+          </section>
+          <section class="panel hint-panel">
+            <div class="hint-title"><span style="color:var(--orange)">✧</span>使用提示</div>
+            <p>把關鍵字放進標籤，搜尋時更容易找回。試試「朋友生日」、「報告簡報」或「雨天週末」，看看哪些筆記會浮上來。</p>
+          </section>
+        </aside>
+
+        <section class="main-column" aria-label="線索內容">
+          <section class="panel search-panel" id="searchPanel" aria-labelledby="searchTitle">
+            <div class="search-heading">
+              <div><h2 id="searchTitle">你現在想找什麼？</h2><p>輸入一個問題或幾個詞，看看哪段記憶最接近。</p></div>
+              <div class="mini-label">LOCAL MATCH · DEMO</div>
+            </div>
+            <form id="searchForm" class="search-row" role="search">
+              <label class="search-box" for="searchInput"><span class="search-symbol" aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="例如：想辦一個低預算的生日活動……" autocomplete="off" aria-label="搜尋線索" /><span style="color:#63748d;font-size:10px;white-space:nowrap">↵ 搜尋</span></label>
+              <button class="button button-primary" type="submit">搜尋線索　→</button>
+            </form>
+            <div class="suggestions" aria-label="搜尋範例"><span class="suggestion-label">試試看</span><button class="suggestion-chip" data-query="朋友生日" type="button">朋友生日</button><button class="suggestion-chip" data-query="報告簡報" type="button">報告簡報</button><button class="suggestion-chip" data-query="雨天週末" type="button">雨天週末</button><button class="suggestion-chip" data-query="環保設計" type="button">環保設計</button></div>
+          </section>
+
+          <div class="results-toolbar">
+            <div><h2 class="results-title"><span style="color:var(--cyan)">✧</span><span id="resultsHeading">你的線索地圖</span></h2><p class="results-sub" id="resultsSub">每一張卡片，都是未來可能用得上的想法。</p></div>
+            <div class="results-count" id="resultsCount">共 0 筆</div>
+          </div>
+          <div class="note-grid" id="noteGrid" aria-live="polite" aria-busy="false"></div>
+
+          <section class="bottom-note">
+            <div class="bottom-note-icon">ⓘ</div>
+            <div><strong>關於「關聯度」</strong><p>這個版本用本機關鍵字規則示範「問題會讓哪些線索變得重要」：標籤權重最高，其次是標題與內文。它不是大型語言模型，也沒有把你的內容傳到雲端；關聯度只是透明、簡化的教學示範，不代表真正 AI 的理解能力。</p></div>
+          </section>
+        </section>
+      </div>
+    </main>
+
+    <footer class="footer"><span>✦ 線索燈塔 · 把想法保存，也把連結找回來。</span><span>單一 HTML｜免安裝｜資料保存在目前瀏覽器</span></footer>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div><h2 id="modalTitle">收進一條新線索</h2><p>寫下來吧，日後的你可能會需要它。</p></div>
+        <button class="close-button" id="closeModalBtn" type="button" aria-label="關閉視窗">✕</button>
+      </div>
+      <form class="form" id="noteForm">
+        <input type="hidden" id="noteId" />
+        <div class="form-grid">
+          <div class="field full"><label for="noteTitle">線索標題 *</label><input id="noteTitle" name="title" maxlength="80" required placeholder="例如：想讓小組報告更有趣的點子" /></div>
+          <div class="field"><label for="noteCategory">分類</label><select id="noteCategory" name="category"><option>學習</option><option>生活</option><option>靈感</option><option>人際</option><option>計畫</option><option>其他</option></select></div>
+          <div class="field"><label for="noteTags">關鍵標籤</label><input id="noteTags" name="tags" maxlength="120" placeholder="報告, 小組, 點子" /><span class="field-hint">用逗號分隔，最多建議 5 個</span></div>
+          <div class="field full"><label for="noteBody">內容 *</label><textarea id="noteBody" name="body" maxlength="1200" required placeholder="把細節、提醒或靈感寫在這裡……"></textarea></div>
+        </div>
+        <div class="form-actions">
+          <label class="check-label"><input id="notePinned" type="checkbox" /> ✦ 標記為重要線索</label>
+          <div style="display:flex;gap:8px"><button class="button button-quiet" id="cancelModalBtn" type="button">取消</button><button class="button button-primary" type="submit">保存線索　✓</button></div>
+        </div>
+      </form>
+    </section>
+  </div>
+  <input type="file" id="importInput" accept="application/json,.json" hidden />
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+    (() => {
+      'use strict';
+      const STORAGE_KEY = 'clue-lighthouse-v1';
+      const CATEGORIES = [
+        { name: '學習', color: '#9ed9ff', bg: 'rgba(91,170,231,.11)', swatch: '#83c8ff', icon: '▧' },
+        { name: '生活', color: '#8ce8df', bg: 'rgba(113,227,218,.09)', swatch: '#71e3da', icon: '⌂' },
+        { name: '靈感', color: '#d1bdff', bg: 'rgba(185,163,255,.11)', swatch: '#b9a3ff', icon: '✧' },
+        { name: '人際', color: '#ffcba0', bg: 'rgba(255,194,123,.11)', swatch: '#ffc27b', icon: '♡' },
+        { name: '計畫', color: '#ffb5cb', bg: 'rgba(255,157,186,.1)', swatch: '#ff9dba', icon: '◷' },
+        { name: '其他', color: '#b8c5d9', bg: 'rgba(184,197,217,.09)', swatch: '#aab8cd', icon: '◌' }
+      ];
+      const TERMS = [
+        '報告','簡報','小組','朋友','生日','預算','手作','桌遊','雨天','週末','料理','考試','複習','專注','環保','回收','靈感','設計','旅行','旅遊','運動','健康','心情','送禮','點心','作業','程式','記憶','線索','省錢','閱讀','筆記','課程','下雨','散步','音樂','清單','故事','照片','植物','校園','社團','時間','目標','整理','創作','電影','展覽','咖啡','早餐','晚餐','午餐','習慣','家人','同學','教室','圖書館','英文','數學','寫作','資料','訪談','海報','影片','演講','科技','AI'
+      ].map(s => s.toLowerCase()).sort((a,b) => b.length - a.length);
+      const DEMO_NOTES = [
+        { id: 'demo-01', title: '把報告變成五分鐘故事', category: '學習', tags: ['報告','小組','簡報','故事'], body: '下週的課堂簡報可以先用一個生活情境開場，再用三個重點收尾。誰負責找資料、 整理視覺，最後一起練習一次。', pinned: true, createdAt: '2026-10-02T10:00:00.000Z', updatedAt: '2026-10-02T10:00:00.000Z', demo: true },
+        { id: 'demo-02', title: '生日願望小卡', category: '人際', tags: ['生日','朋友','預算','手作'], body: '朋友喜歡手作和散步，不太在意昂貴的禮物。可以寫三張小卡、準備自製點心，再安排一段河邊散步，預算控制在 300 元內。', pinned: true, createdAt: '2026-09-25T11:00:00.000Z', updatedAt: '2026-09-25T11:00:00.000Z', demo: true },
+        { id: 'demo-03', title: '下雨時的室內備案', category: '生活', tags: ['雨天','週末','朋友','桌遊'], body: '如果週末突然下雨，可以改成桌遊交換、一起整理歌單，或在家做簡單料理。活動不用花很多錢，先準備兩個方案就好。', pinned: false, createdAt: '2026-09-18T09:30:00.000Z', updatedAt: '2026-09-18T09:30:00.000Z', demo: true },
+        { id: 'demo-04', title: '二十五分鐘專注清單', category: '學習', tags: ['考試','複習','時間','筆記'], body: '把大任務拆成 25 分鐘的小段：先關掉通知、讀一個主題、用自己的話寫下三個重點，再休息五分鐘。比起一次排滿整晚，這樣比較容易開始。', pinned: false, createdAt: '2026-09-12T08:00:00.000Z', updatedAt: '2026-09-12T08:00:00.000Z', demo: true },
+        { id: 'demo-05', title: '回收紙也能成為設計素材', category: '靈感', tags: ['環保','回收','設計','創作'], body: '把用過的單面紙裁成大小不一的色塊，拼成海報底圖或手帳分隔頁。可以先拍下不同排列，再挑一個最清楚的版本，不一定要先買新材料。', pinned: false, createdAt: '2026-08-30T15:20:00.000Z', updatedAt: '2026-08-30T15:20:00.000Z', demo: true },
+        { id: 'demo-06', title: '把腦中點子暫存起來', category: '計畫', tags: ['靈感','清單','時間','整理'], body: '突然想到的事先用一句話記下來，再加一個容易搜尋的標籤。每週找十分鐘回顧一次，挑一個真的想做的點子開始，不用要求自己全部完成。', pinned: false, createdAt: '2026-08-24T12:00:00.000Z', updatedAt: '2026-08-24T12:00:00.000Z', demo: true }
+      ];
+      let notes = [];
+      let selectedFilter = 'all';
+      let selectedCategory = 'all';
+      let query = '';
+      let editingId = null;
+      let storageAvailable = true;
+      const $ = id => document.getElementById(id);
+      const grid = $('noteGrid');
+
+      function escapeText(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+      }
+      function normalize(value) { return String(value ?? '').toLocaleLowerCase('zh-Hant').normalize('NFKC').replace(/[，、；;|｜]/g, ' '); }
+      function makeId() { return 'n-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8); }
+      function categoryInfo(name) { return CATEGORIES.find(c => c.name === name) || CATEGORIES[CATEGORIES.length - 1]; }
+      function dateLabel(value) {
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return '剛剛更新';
+        return new Intl.DateTimeFormat('zh-TW', { month:'numeric', day:'numeric' }).format(d);
+      }
+      function loadNotes() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) return parsed.filter(isValidNote).map(normalizeNote);
+          }
+        } catch (err) { storageAvailable = false; }
+        return DEMO_NOTES.map(n => ({...n, tags:[...n.tags]}));
+      }
+      function isValidNote(n) { return n && typeof n === 'object' && typeof n.title === 'string' && typeof n.body === 'string'; }
+      function normalizeNote(n) {
+        return { id: String(n.id || makeId()), title: String(n.title).slice(0,80), body: String(n.body).slice(0,1200), category: CATEGORIES.some(c => c.name === n.category) ? n.category : '其他', tags: Array.isArray(n.tags) ? n.tags.map(t=>String(t).slice(0,30)).filter(Boolean).slice(0,12) : [], pinned: Boolean(n.pinned), createdAt: n.createdAt || new Date().toISOString(), updatedAt: n.updatedAt || n.createdAt || new Date().toISOString(), demo: Boolean(n.demo) };
+      }
+      function persist(showToast = false) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+          storageAvailable = true;
+          $('saveStatus').textContent = '已在這台裝置保存';
+          if (showToast) toast('已保存，這份線索留在目前瀏覽器裡。');
+        } catch (err) {
+          storageAvailable = false;
+          $('saveStatus').textContent = '瀏覽器未允許保存';
+          if (showToast) toast('瀏覽器無法儲存資料；請匯出 JSON 備份。', true);
+        }
+      }
+      function toast(message, error = false) {
+        const item = document.createElement('div');
+        item.className = 'toast' + (error ? ' error' : '');
+        item.textContent = message;
+        $('toastRegion').appendChild(item);
+        window.setTimeout(() => item.remove(), 3500);
+      }
+      function extractTerms(text) {
+        let rest = normalize(text);
+        const found = [];
+        for (const term of TERMS) {
+          if (rest.includes(term)) {
+            found.push(term);
+            rest = rest.split(term).join(' ');
+          }
+        }
+        const latin = rest.match(/[a-z0-9]+/g) || [];
+        latin.forEach(t => { if (t.length > 1) found.push(t); });
+        const chineseRuns = rest.match(/[\u4e00-\u9fff]{2,}/g) || [];
+        chineseRuns.forEach(run => {
+          for (let i=0; i<run.length-1 && found.length < 16; i++) found.push(run.slice(i,i+2));
+        });
+        return [...new Set(found)].slice(0,16);
+      }
+      function rankNote(note, searchQuery) {
+        const terms = extractTerms(searchQuery);
+        if (!terms.length) return { score:0, matched:[], total:0 };
+        const title = normalize(note.title);
+        const body = normalize(note.body);
+        const tags = normalize((note.tags || []).join(' '));
+        let raw = 0; const matched = [];
+        terms.forEach(term => {
+          let part = 0;
+          if (tags.includes(term)) part += 5;
+          if (title.includes(term)) part += 4;
+          if (body.includes(term)) part += 2;
+          if (part > 0) { raw += part; matched.push(term); }
+        });
+        const score = Math.min(100, Math.round((raw / (terms.length * 11)) * 100));
+        return { score, matched, total:matched.length };
+      }
+      function getVisibleNotes() {
+        let output = notes.slice();
+        if (selectedFilter === 'pinned') output = output.filter(n => n.pinned);
+        if (selectedCategory !== 'all') output = output.filter(n => n.category === selectedCategory);
+        const searching = Boolean(query.trim());
+        if (searching) {
+          output = output.map(n => ({...n, _rank:rankNote(n,query)})).filter(n => n._rank.total > 0 && n._rank.score >= 8);
+          output.sort((a,b) => b._rank.score - a._rank.score || Number(b.pinned)-Number(a.pinned) || new Date(b.updatedAt)-new Date(a.updatedAt));
+        } else {
+          output.sort((a,b) => Number(b.pinned)-Number(a.pinned) || new Date(b.updatedAt)-new Date(a.updatedAt));
+        }
+        return output;
+      }
+      function renderStats() {
+        $('totalStat').textContent = notes.length;
+        $('pinnedStat').textContent = notes.filter(n=>n.pinned).length;
+        $('categoryStat').textContent = new Set(notes.map(n=>n.category)).size;
+        $('allCount').textContent = notes.length;
+        $('pinnedCount').textContent = notes.filter(n=>n.pinned).length;
+      }
+      function renderFilters() {
+        document.querySelectorAll('[data-filter]').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === selectedFilter));
+        const counts = Object.fromEntries(CATEGORIES.map(c => [c.name, notes.filter(n=>n.category===c.name).length]));
+        $('categoryFilters').innerHTML = `<button class="category-button ${selectedCategory==='all'?'active':''}" data-category="all" type="button"><span class="category-swatch" style="--swatch:var(--cyan)"></span>所有分類<span class="category-count">${notes.length}</span></button>` + CATEGORIES.map(c => `<button class="category-button ${selectedCategory===c.name?'active':''}" data-category="${escapeText(c.name)}" type="button"><span class="category-swatch" style="--swatch:${c.swatch}"></span>${escapeText(c.name)}<span class="category-count">${counts[c.name]}</span></button>`).join('');
+      }
+      function makeNoteCard(note) {
+        const c = categoryInfo(note.category);
+        const rank = note._rank;
+        const tags = (note.tags || []).slice(0,5).map(t => `<span class="tag">#${escapeText(t)}</span>`).join('');
+        const relevant = rank ? `<div class="relevance"><div class="relevance-top"><span>本次搜尋的關聯度</span><span class="relevance-value">${rank.score}%</span></div><div class="meter"><div class="meter-fill" style="width:${rank.score}%"></div></div><div class="match-terms">命中線索：${rank.matched.map(escapeText).join('、')}</div></div>` : '';
+        const pinned = note.pinned;
+        return `<article class="note-card ${pinned?'pinned':''}" style="--card-accent:${c.swatch}" data-note-id="${escapeText(note.id)}">
+          <div class="note-topline"><span class="category-tag" style="--tag-color:${c.color};--tag-bg:${c.bg}"><span>${c.icon}</span>${escapeText(note.category)}</span><span class="note-date">${dateLabel(note.updatedAt)} 更新</span></div>
+          <h3 class="note-title">${escapeText(note.title)}</h3>
+          <p class="note-body">${escapeText(note.body)}</p>
+          <div class="note-tags">${tags || '<span class="tag">尚未加標籤</span>'}</div>
+          ${relevant}
+          <div class="note-footer"><span class="note-footer-left">${pinned?'✦ 重要線索':'◇ 個人筆記'}</span><div class="note-actions"><button class="icon-button ${pinned?'is-pinned':''}" data-action="pin" data-id="${escapeText(note.id)}" type="button" aria-label="${pinned?'取消重要標記':'標記為重要'}" title="${pinned?'取消重要標記':'標記為重要'}">${pinned?'★':'☆'}</button><button class="icon-button" data-action="edit" data-id="${escapeText(note.id)}" type="button" aria-label="編輯線索" title="編輯">✎</button><button class="icon-button" data-action="delete" data-id="${escapeText(note.id)}" type="button" aria-label="刪除線索" title="刪除">⌫</button></div></div>
+        </article>`;
+      }
+      function render() {
+        renderStats(); renderFilters();
+        const visible = getVisibleNotes();
+        const searching = Boolean(query.trim());
+        $('resultsHeading').textContent = searching ? '找到的相關線索' : selectedFilter === 'pinned' ? '重要線索' : selectedCategory !== 'all' ? `${selectedCategory}分類` : '你的線索地圖';
+        $('resultsSub').textContent = searching ? `依照「${query.trim()}」的關鍵字命中程度排序。` : '每一張卡片，都是未來可能用得上的想法。';
+        $('resultsCount').textContent = `顯示 ${visible.length} / ${notes.length} 筆`;
+        grid.setAttribute('aria-busy','true');
+        if (!visible.length) {
+          const hasFilter = searching || selectedFilter === 'pinned' || selectedCategory !== 'all';
+          grid.style.gridTemplateColumns = '1fr';
+          grid.innerHTML = `<div class="empty-state"><div class="empty-icon">${searching?'⌕':'✧'}</div><h3>${searching?'還沒有找到相符的線索':'這裡暫時空空的'}</h3><p>${searching?'試著換個詞、縮短句子，或在筆記的標籤中補上關鍵字。':hasFilter?'換一個篩選條件，或新增一條線索。':'寫下第一個想法，之後就能從這裡找回它。'}</p><button class="button button-primary" data-action="add" type="button">＋ 新增線索</button>${searching?'<button class="button button-quiet" style="margin-left:6px" data-action="clear-search" type="button">清除搜尋</button>':''}</div>`;
+        } else {
+          grid.style.gridTemplateColumns = '';
+          grid.innerHTML = visible.map(makeNoteCard).join('');
+        }
+        grid.setAttribute('aria-busy','false');
+        $('saveStatus').textContent = storageAvailable ? '資料儲存在這台裝置' : '瀏覽器未允許保存';
+      }
+      function openModal(note = null) {
+        editingId = note ? note.id : null;
+        $('modalTitle').textContent = note ? '編輯這條線索' : '收進一條新線索';
+        $('noteId').value = note ? note.id : '';
+        $('noteTitle').value = note ? note.title : '';
+        $('noteCategory').value = note ? note.category : '靈感';
+        $('noteTags').value = note ? (note.tags || []).join(', ') : '';
+        $('noteBody').value = note ? note.body : '';
+        $('notePinned').checked = note ? note.pinned : false;
+        $('modalBackdrop').hidden = false;
+        document.body.style.overflow = 'hidden';
+        window.setTimeout(() => $('noteTitle').focus(), 30);
+      }
+      function closeModal() { $('modalBackdrop').hidden = true; document.body.style.overflow = ''; editingId = null; }
+      function handleSubmit(event) {
+        event.preventDefault();
+        const title = $('noteTitle').value.trim();
+        const body = $('noteBody').value.trim();
+        if (!title || !body) { toast('標題和內容都要填寫。', true); return; }
+        const tags = [...new Set($('noteTags').value.split(/[,，、;；\n]/).map(t=>t.trim()).filter(Boolean).map(t=>t.slice(0,30)))].slice(0,12);
+        const now = new Date().toISOString();
+        if (editingId) {
+          const index = notes.findIndex(n=>n.id===editingId);
+          if (index >= 0) notes[index] = {...notes[index], title, body, category:$('noteCategory').value, tags, pinned:$('notePinned').checked, updatedAt:now, demo:false};
+          toast('線索已更新。');
+        } else {
+          notes.unshift({id:makeId(), title, body, category:$('noteCategory').value, tags, pinned:$('notePinned').checked, createdAt:now, updatedAt:now, demo:false});
+          query=''; $('searchInput').value=''; selectedFilter='all'; selectedCategory='all';
+          toast('新線索已收進燈塔。');
+        }
+        persist(); closeModal(); render();
+      }
+      function exportData() {
+        const payload = { app: '線索燈塔', version: 1, exportedAt: new Date().toISOString(), notes };
+        const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a'); link.href = url; link.download = `線索燈塔備份-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+        toast(`已準備好 ${notes.length} 筆線索的 JSON 備份。`);
+      }
+      function importData(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(String(reader.result));
+            const incoming = Array.isArray(parsed) ? parsed : parsed && Array.isArray(parsed.notes) ? parsed.notes : null;
+            if (!incoming || !incoming.every(isValidNote)) throw new Error('格式不正確');
+            if (!window.confirm(`將用檔案中的 ${incoming.length} 筆線索取代目前 ${notes.length} 筆內容。請先確認已匯出備份。要繼續嗎？`)) return;
+            notes = incoming.map(normalizeNote);
+            persist(); query=''; $('searchInput').value=''; selectedFilter='all'; selectedCategory='all'; render();
+            toast(`已匯入 ${notes.length} 筆線索。`);
+          } catch (err) { toast('匯入失敗：請選擇線索燈塔匯出的有效 JSON 檔。', true); }
+          finally { $('importInput').value=''; }
+        };
+        reader.onerror = () => { toast('讀取檔案失敗，請再試一次。', true); $('importInput').value=''; };
+        reader.readAsText(file);
+      }
+      function resetDemo() {
+        const additions = DEMO_NOTES.filter(n=>!notes.some(old=>old.id===n.id));
+        if (!additions.length) { toast('示範線索已經在你的收藏中。'); return; }
+        notes = [...notes, ...additions.map(n=>({...n,tags:[...n.tags]}))];
+        persist(); render(); toast(`已補回 ${additions.length} 筆示範線索。`);
+      }
+
+      $('addTopBtn').addEventListener('click',()=>openModal());
+      $('addHeroBtn').addEventListener('click',()=>openModal());
+      $('closeModalBtn').addEventListener('click',closeModal);
+      $('cancelModalBtn').addEventListener('click',closeModal);
+      $('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal();});
+      $('noteForm').addEventListener('submit',handleSubmit);
+      $('exportBtn').addEventListener('click',exportData);
+      $('importInput').addEventListener('change',e=>importData(e.target.files && e.target.files[0]));
+      $('focusSearchBtn').addEventListener('click',()=>{$('searchInput').focus();$('searchPanel').scrollIntoView({behavior:'smooth',block:'center'});});
+      $('searchForm').addEventListener('submit',e=>{e.preventDefault();query=$('searchInput').value.trim();render();});
+      $('searchInput').addEventListener('input',()=>{query=$('searchInput').value.trim();render();});
+      document.querySelectorAll('[data-query]').forEach(btn=>btn.addEventListener('click',()=>{$('searchInput').value=btn.dataset.query;query=btn.dataset.query;selectedFilter='all';selectedCategory='all';render();}));
+      $('mainFilters').addEventListener('click',e=>{const btn=e.target.closest('[data-filter]');if(!btn)return;selectedFilter=btn.dataset.filter;render();});
+      $('categoryFilters').addEventListener('click',e=>{const btn=e.target.closest('[data-category]');if(!btn)return;selectedCategory=btn.dataset.category;render();});
+      grid.addEventListener('click',e=>{
+        const actionBtn=e.target.closest('[data-action]');
+        if (!actionBtn) return;
+        const action=actionBtn.dataset.action;
+        if (action==='add') { openModal(); return; }
+        if (action==='clear-search') { query='';$('searchInput').value='';render();return; }
+        const id=actionBtn.dataset.id;
+        const note=notes.find(n=>n.id===id);
+        if (!note) return;
+        if (action==='pin') { note.pinned=!note.pinned;note.updatedAt=new Date().toISOString();persist();render();toast(note.pinned?'已標記為重要線索。':'已取消重要標記。'); }
+        if (action==='edit') openModal(note);
+        if (action==='delete') {
+          if (!window.confirm(`確定刪除「${note.title}」嗎？這個動作無法復原。`)) return;
+          notes=notes.filter(n=>n.id!==id);persist();render();toast('線索已刪除。');
+        }
+      });
+      document.addEventListener('keydown',e=>{if(e.key==='Escape' && !$('modalBackdrop').hidden)closeModal();});
+
+      // The import control is intentionally discoverable from the page without adding a third-party dependency.
+      // Keyboard shortcut: Ctrl/Cmd+Shift+I opens the JSON import picker; Ctrl/Cmd+Shift+E exports a backup.
+      document.addEventListener('keydown',e=>{
+        if ((e.ctrlKey||e.metaKey) && e.shiftKey && e.key.toLowerCase()==='i') { e.preventDefault();$('importInput').click(); }
+        if ((e.ctrlKey||e.metaKey) && e.shiftKey && e.key.toLowerCase()==='e') { e.preventDefault();exportData(); }
+      });
+
+      notes = loadNotes();
+      render();
+      if (!storageAvailable) toast('目前無法讀取本機儲存；本次資料仍可暫時操作，建議定期匯出備份。', true);
+
+      // Expose a small import entry point through a custom event for accessibility and future enhancement.
+      window.addEventListener('clue-lighthouse:import',()=> $('importInput').click());
+      // Add non-intrusive import/demo actions to the footer via keyboard context without cluttering the main interface.
+      const footer = document.querySelector('.footer');
+      const utility = document.createElement('span');
+      utility.style.display='inline-flex'; utility.style.gap='12px'; utility.style.flexWrap='wrap';
+      utility.innerHTML='<button type="button" data-utility="import" style="background:none;border:0;padding:0;color:#8394ad;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px">匯入 JSON</button><button type="button" data-utility="demo" style="background:none;border:0;padding:0;color:#8394ad;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px">補回示範線索</button>';
+      footer.appendChild(utility);
+      utility.addEventListener('click',e=>{const b=e.target.closest('[data-utility]');if(!b)return;if(b.dataset.utility==='import')$('importInput').click();if(b.dataset.utility==='demo')resetDemo();});
+    })();
+  </script>
+</body>
+</html>
